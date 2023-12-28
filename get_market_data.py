@@ -115,20 +115,21 @@ def main():
 	for ticker_symbol in symbols:
 		getPrice(ticker_symbol)
 
+	# dividend information
 	if len(dividend_list) > 0:
-		print(f"\nMean Dividend in {dividend_timespan} days:")
+		# Set the time range for the past year
+		start_date = datetime.now() - timedelta(days=dividend_timespan * max(args.last_n_years, args.interval_period_years))
+		end_date = start_date + timedelta(days=dividend_timespan * args.interval_period_years)
+	
+		# Format dates for the Yahoo Finance API
+		start_date_str = int(start_date.timestamp())
+		end_date_str = int(end_date.timestamp())
+
+		print(f"\nMean Dividend over {args.interval_period_years} years since {args.last_n_years}:")
 		print("-------------------------------------------------------")
-
-	# Set the time range for the past year
-	start_date = datetime.now() - timedelta(days=dividend_timespan * max(args.last_n_years, args.interval_period_years))
-	end_date = start_date + timedelta(days=dividend_timespan * args.interval_period_years)
-
-	# Format dates for the Yahoo Finance API
-	start_date_str = int(start_date.timestamp())
-	end_date_str = int(end_date.timestamp())
-
-	for ticker_symbol in dividend_list:
-		get_dividend_data(ticker_symbol, start_date_str, end_date_str)
+	
+		for ticker_symbol in dividend_list:
+			get_dividend_data(ticker_symbol, start_date_str, end_date_str)
 	
 if __name__ == "__main__":
 	main()

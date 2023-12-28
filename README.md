@@ -5,7 +5,7 @@ Investment Scripts
 
 ### Setup
 
-* sign up for yahoo API called api-dojo and get the private key
+* sign up for yahoo API called api-dojo and get the private key, https://rapidapi.com/manwilbahaa/api/yahoo-finance127/
 * make a new file called `private_keys.py` and use the private key above to set the header content
 * optional: create a new file called `dividends_list.csv` and put all the ticker symbols there to query the price for
 

@@ -22,7 +22,7 @@ def getNames():
 	with open(default_file) as csv_file:
 		csv_reader = csv.reader(csv_file)
 		for row in csv_reader:
-			names.append(row[0])
+			names.append(row[0].upper())
 	return names, len(names)
 
 def get_dividend_data(ticker_symbol, start_date, end_date):
@@ -48,7 +48,7 @@ def get_dividend_data(ticker_symbol, start_date, end_date):
 		#dsum = sum(dividends)
 		#print (f"sum {dsum}")
 
-		if len(dividends) > 0:
+		if dividends:
 			mean_dividend = sum(dividends) / len(dividends)
 
 		return len(dividends), mean_dividend
@@ -64,7 +64,8 @@ def print_dividend_data(ticker_symbol, start_date, end_date):
 		dividend_cache[ticker_symbol] = mean_dividend
 		dividend_state[ticker_symbol] = size
 
-	print(f"{ticker_symbol}\t{round(dividend_cache[ticker_symbol],2)}")
+	payout_amount = dividend_cache[ticker_symbol] * dividend_state[ticker_symbol]
+	print(f"{ticker_symbol}\tper payout:{round(dividend_cache[ticker_symbol],2)},total payout:{round(payout_amount,2)}")
 
 
 def print_reinvestment_data(ticker_symbol, start_date, end_date):
@@ -85,7 +86,7 @@ def print_reinvestment_data(ticker_symbol, start_date, end_date):
 			share_count = current_price / mean_div
 			drip_amount = ceil(share_count) * current_price
 
-			print(f"{ticker_symbol}\t{round(drip_amount,2)}")
+			print(f"{ticker_symbol}\tdrip amount:{round(drip_amount,2)},buy shares:{ceil(share_count)},per payout:{round(mean_div, 2)},cost per share:{round(current_price, 2)} ")
 		else:
 			print(f"{ticker_symbol}\tno dividends")
 	else:
@@ -132,48 +133,90 @@ def main():
 	reinvestment_list = []
 
 	parser = argparse.ArgumentParser("Get market data")
-	parser.add_argument("-t", "--ticker_symbol", help="list of ticker symbols to query prices", nargs="+", type=str)
-	parser.add_argument("-d", "--dividends", help="list of ticker symbols to get mean dividends info for", nargs="+", type=str)
+	parser.add_argument("-t", "--ticker_symbol", help="list of ticker symbols to query prices", nargs='*', type=str)
+	parser.add_argument("-d", "--dividends", help="list of ticker symbols to get mean dividends info for", nargs='*', type=str)
 	parser.add_argument("-y", "--last_n_years", help="year in which to get mean dividends from, default [1] = last 365 days from today", type=int, default=1)
 	parser.add_argument("-i", "--period_years", help="interval period to query. if interval is bigger than years, then it will query period length, default [1] = 365 days to average over since last_n_years", type=int, default=1)
-	parser.add_argument("-r", "--drip_amount", help="amount needed to reinvest the dividend to buy more share(s)", nargs="+", type=str)
+	parser.add_argument("-r", "--drip_amount", help="amount needed to reinvest the dividend to buy more share(s)", nargs='*', type=str)
+	parser.add_argument("-a", "--show_all", help="get all the values supported in the script", default=False)
+	parser.add_argument("-b", "--breakdown", help="show itemized list of tickers from available cash to maximize growth or dividends", type=int, default=False)
 
 	args = parser.parse_args()
 
 	print("\nSettings as follows:")
-	print("-------------------------------------------------------")
+	print("-----------------------------------------------------------------------------------")
 
 	arguments = vars(args);
 	for arg in arguments:
-		print(arg, '\t', getattr(args, arg))
+		attr = getattr(args, arg);
+		if attr:
+			print(arg, '\t',attr)
+	#----------------------------------------------------------------
+
+	if args.ticker_symbol is not None:
+		for symbol in args.ticker_symbol :
+			symbols_list.append(symbol.upper())
+
+	if args.dividends is not None:
+		for symbol in args.dividends:
+			dividend_list.append(symbol.upper())
+
+	if args.drip_amount is not None:
+		for symbol in args.drip_amount:
+			reinvestment_list.append(symbol.upper())
 
 
-	if args.ticker_symbol is None and args.dividends is None and args.drip_amount is None:
-		symbols_list, count = getNames()
-		print("Found ", count, f" names from {default_file}")
-	else:
+	# get names from the default file if no parameters passed
+	if not symbols_list and not dividend_list and not reinvestment_list:
+		symbols, count = getNames()
+
+		if args.show_all:
+			symbols_list        = symbols
+			dividend_list       = symbols
+			reinvestment_list   = symbols
+
 		if args.ticker_symbol is not None:
-			for symbol in args.ticker_symbol:
-				symbols_list.append(symbol)
+			symbols_list        = symbols
 
 		if args.dividends is not None:
-			for symbol in args.dividends:
-				dividend_list.append(symbol)
+			dividend_list       = symbols
 
 		if args.drip_amount is not None:
-			for symbol in args.drip_amount:
-				reinvestment_list.append(symbol)
+			reinvestment_list   = symbols
 
-	if len(symbols_list) > 0:
-		print("\nStock price now ", datetime.now())
-		print("-------------------------------------------------------")
+		print("Found ", count, f" names from {default_file}")
 
-	# simple cost of the security now
-	for ticker_symbol in symbols_list:
-		print_current_price(ticker_symbol)
+	# only ticker is defined
+	elif symbols_list and not dividend_list and not reinvestment_list:
+		if args.dividends is not None:
+			dividend_list       = symbols_list
+		if args.drip_amount is not None:
+			reinvestment_list   = symbols_list
+
+	# only dividend is defined
+	elif not symbols_list and dividend_list and not reinvestment_list:
+		if args.ticker_symbol is not None:
+			symbols_list        = dividend_list
+		if args.drip_amount is not None:
+			reinvestment_list   = dividend_list
+
+	# only reinvestment is defined
+	elif not symbols_list and not dividend_list and reinvestment_list:
+		if args.ticker_symbol is not None:
+			symbols_list        = reinvestment_list
+		if args.dividends is not None:
+			dividend_list       = reinvestment_list
+
+	if symbols_list:
+		print(f"\n[Stock Price Now]\t\t{datetime.now().strftime('%d-%b-%Y')}",)
+		print("-----------------------------------------------------------------------------------")
+
+		# simple cost of the security now
+		for ticker_symbol in symbols_list:
+			print_current_price(ticker_symbol)
 
 	# dividend information
-	if len(dividend_list) > 0:
+	if dividend_list:
 		# Set the time range for the past year
 		start_date = datetime.now() - timedelta(days=dividend_timespan * max(args.last_n_years, args.period_years))
 		end_date = start_date + timedelta(days=dividend_timespan * args.period_years)
@@ -182,14 +225,14 @@ def main():
 		start_date_str = int(start_date.timestamp())
 		end_date_str = int(end_date.timestamp())
 
-		print(f"\nMean dividend over {args.period_years} year(s) since {args.last_n_years} year(s):")
-		print("-------------------------------------------------------")
+		print(f"\n[Mean Dividend]\t\t\t{start_date.date().strftime('%d-%b-%Y')} over the next {args.period_years} year(s) or {end_date.date().strftime('%d-%b-%Y')}:")
+		print("-----------------------------------------------------------------------------------")
 
 		for ticker_symbol in dividend_list:
 			print_dividend_data(ticker_symbol, start_date_str, end_date_str)
 
 	# how much capital to get drip going
-	if len(reinvestment_list) > 0:
+	if reinvestment_list:
 		end_date = datetime.now()
 		start_date = datetime.now() - timedelta(days=dividend_timespan * 1)
 
@@ -197,8 +240,8 @@ def main():
 		start_date_str = int(start_date.timestamp())
 		end_date_str = int(end_date.timestamp())
 
-		print(f"\nDrip amount from dividends over {args.period_years} year(s) since {args.last_n_years} year(s):")
-		print("-------------------------------------------------------")
+		print(f"\n[Drip Amount From Dividends]\t{start_date.date().strftime('%d-%b-%Y')} over the next {args.period_years} year(s) or {end_date.date().strftime('%d-%b-%Y')}:")
+		print("-----------------------------------------------------------------------------------")
 
 		for ticker_symbol in reinvestment_list:
 			print_reinvestment_data(ticker_symbol, start_date_str, end_date_str)

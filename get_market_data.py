@@ -136,7 +136,7 @@ def main():
 	parser.add_argument("-t", "--ticker_symbol", help="list of ticker symbols to query prices", nargs='*', type=str)
 	parser.add_argument("-d", "--dividends", help="list of ticker symbols to get mean dividends info for", nargs='*', type=str)
 	parser.add_argument("-y", "--last_n_years", help="year in which to get mean dividends from, default [1] = last 365 days from today", type=int, default=1)
-	parser.add_argument("-i", "--period_years", help="interval period to query. if interval is bigger than years, then it will query period length, default [1] = 365 days to average over since last_n_years", type=int, default=1)
+	parser.add_argument("-i", "--period_years", help="interval period to query. if interval is bigger than years, then it will query period length, default [1] = 365 days to average over since last_n_years", type=int, default=-1)
 	parser.add_argument("-r", "--drip_amount", help="amount needed to reinvest the dividend to buy more share(s)", nargs='*', type=str)
 	parser.add_argument("-a", "--show_all", help="get all the values supported in the script", default=False)
 	parser.add_argument("-b", "--breakdown", help="show itemized list of tickers from available cash to maximize growth or dividends", type=int, default=False)
@@ -206,6 +206,9 @@ def main():
 
 	print("\nSettings as follows:")
 	print("-----------------------------------------------------------------------------------")
+	if args.period_years < 0:
+		args.period_years = args.last_n_years;
+
 	arguments = vars(args)
 	list1 = []
 	list2 = []

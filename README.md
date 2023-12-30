@@ -10,7 +10,7 @@ The dividend reinvestment calculator is designed to help users estimate the numb
 
 ## Description 
 
-Check any of the price, dividend payout, or new amount of money needed to invest in the security that will make it drip eligible for each ticker symbol. For new securities, in most cases we don't buy as many as securities as needed to start the drip right away, but the script makes it easier to find out how much initial capital one needs and how many shares to purchase based on today's price and dividend payout in case one wants to buy them at once. If the share price goes up, it is likely that the security is no longer drip eligible and one will have to run the numbers again, or the dividend falls and the payout to reinvest in a new share is no longer enough. When a security pays more dividend or the price of the security falls, one can also run the numbers again and liquidate the excess shares of that security and invest in another type of security.
+Check any of the price, dividend payout, or new amount of money needed to invest in the security that will make it drip eligible for each ticker symbol. For new securities, in most cases we don't buy as many as securities as needed to start the drip right away, but the script makes it easier to find out how much initial capital one needs and how many shares to purchase based on today's price and dividend payout in case one wants to buy them all at once. If the share price goes up, it is likely that the security is no longer drip eligible and one will have to run the numbers again, or the dividend falls and the payout to reinvest in a new share is no longer enough. When a security pays more dividend or the price of the security falls, one can also run the numbers again and liquidate the excess shares of that security and invest in another type of security.
 
 In most cases one has to run the numbers when they notice that they are no longer receiving drip shares for one or few securities as the prices of the securities go up. Especially when the market is recovering, one has to buy more shares of that type to cover situations of this sort. The script will show the minimum count of shares needed based on the price on that day and average dividend payout over the last year.
 <br />
@@ -86,6 +86,78 @@ drip_amount      ['TD.TO']
 [Drip Amount From Dividends]    29-Dec-2022 over the next 1 year(s) or 29-Dec-2023:
 -----------------------------------------------------------------------------------
 TD.TO   drip amount:7691.4,buy shares:90,per payout:0.96,cost per share:85.46
+```
+<br />
+
+### Data from cache
+
+To query cost of shares from a local cached file called `dividends_list.csv`
+
+Contents of the file
+```python
+TD.TO
+XEI.TO
+```
+
+Command issued
+```python
+python get_market_data.py -t 
+```
+
+Output as follows from the input list of ticket symbols 
+```bash
+Settings as follows:
+-----------------------------------------------------------------------------------
+last_n_years     1
+period_years     1
+ticker_symbol    ['TD.TO','XEI.TO']
+
+
+[Stock Price Now]               29-Dec-2023
+-----------------------------------------------------------------------------------
+TD.TO   85.62
+XEI.TO  24.76
+```
+<br />
+
+To query all recent market data of ticker symbols mentioned inside the cache
+
+Contents of the file
+```python
+TD.TO
+XEI.TO
+```
+
+Command issued
+```python
+python get_market_data.py -a 
+```
+
+Output as follows from the input list of ticket symbols 
+```bash
+Settings as follows:
+-----------------------------------------------------------------------------------
+last_n_years     1
+period_years     1
+ticker_symbol    ['TD.TO','XEI.TO']
+dividends        ['TD.TO','XEI.TO']
+drip_amount      ['TD.TO','XEI.TO']
+
+
+[Stock Price Now]               29-Dec-2023
+-----------------------------------------------------------------------------------
+TD.TO   85.62
+XEI.TO  24.76
+
+[Mean Dividend]                 29-Dec-2022 over the next 1 year(s) or 29-Dec-2023:
+-----------------------------------------------------------------------------------
+TD.TO   per payout:0.96,total payout:2.88
+XEI.TO  per payout:0.11,total payout:1.39
+
+[Drip Amount From Dividends]    29-Dec-2022 over the next 1 year(s) or 29-Dec-2023:
+-----------------------------------------------------------------------------------
+TD.TO   drip amount:7696.35,buy shares:90,per payout:0.96,cost per share:85.52
+XEI.TO  drip amount:5595.76,buy shares:226,per payout:0.11,cost per share:24.76
 ```
 <br />
 

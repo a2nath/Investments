@@ -1,14 +1,27 @@
 # Investments
 
-## Using the script
+## Overview
+The dividend reinvestment calculator is designed to help users estimate the number of shares they can acquire and the initial funding required to kickstart a dividend reinvestment strategy for specific securities
+
+* It serves as a valuable financial planning tool, helping users set realistic goals, assess funding requirements, and plan for future income streams by providing a table of dividend payouts and drip amounts
+* The script provides an educational resource on the benefits of dividend reinvestment, empowering users with insights into wealth-building strategies. Furthermore it can be run through Excel VBA or integrated into other third party programs
+* It offers flexibility in terms of querying market data through the command line or having specific ticker symbols cached locally and makes a minimal number of API calls to get the required data
+* Users can analyze multiple securities at once, making it easy to compare and choose the most suitable securities for their investment strategy
+
+## Description 
+
+Check any of the price, dividend payout, or new amount of money needed to invest in the security that will make it drip eligible for each ticker symbol. For new securities, in most cases we don't buy as many as securities as needed to start the drip right away, but the script makes it easier to find out how much initial capital one needs and how many shares to purchase based on today's price and dividend payout in case one wants to buy them at once. If the share price goes up, it is likely that the security is no longer drip eligible and one will have to run the numbers again, or the dividend falls and the payout to reinvest in a new share is no longer enough. When a security pays more dividend or the price of the security falls, one can also run the numbers again and liquidate the excess shares of that security and invest in another type of security.
+
+In most cases one has to run the numbers when they notice that they are no longer receiving drip shares for one or few securities as the prices of the securities go up. Especially when the market is recovering, one has to buy more shares of that type to cover situations of this sort. The script will show the minimum count of shares needed based on the price on that day and average dividend payout over the last year.
 <br />
+
+## Using the script
 
 ### Setup
 
 * sign up for yahoo API called api-dojo and get the private key, https://rapidapi.com/manwilbahaa/api/yahoo-finance127/
 * make a new file called `private_keys.py` and use the private key above to set the header content
 * optional: create a new file called `dividends_list.csv` and put all the ticker symbols there to query the price for
-<br />
 
 ### Usage
 

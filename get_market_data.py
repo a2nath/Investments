@@ -143,16 +143,6 @@ def main():
 
 	args = parser.parse_args()
 
-	print("\nSettings as follows:")
-	print("-----------------------------------------------------------------------------------")
-
-	arguments = vars(args);
-	for arg in arguments:
-		attr = getattr(args, arg);
-		if attr:
-			print(arg, '\t',attr)
-	#----------------------------------------------------------------
-
 	if args.ticker_symbol is not None:
 		for symbol in args.ticker_symbol :
 			symbols_list.append(symbol.upper())
@@ -189,23 +179,51 @@ def main():
 	# only ticker is defined
 	elif symbols_list and not dividend_list and not reinvestment_list:
 		if args.dividends is not None:
+			args.dividends      = symbols_list
 			dividend_list       = symbols_list
 		if args.drip_amount is not None:
+			args.drip_amount    = symbols_list
 			reinvestment_list   = symbols_list
 
 	# only dividend is defined
 	elif not symbols_list and dividend_list and not reinvestment_list:
 		if args.ticker_symbol is not None:
+			args.ticker_symbol  = dividend_list
 			symbols_list        = dividend_list
 		if args.drip_amount is not None:
+			args.drip_amount    = dividend_list
 			reinvestment_list   = dividend_list
 
 	# only reinvestment is defined
 	elif not symbols_list and not dividend_list and reinvestment_list:
 		if args.ticker_symbol is not None:
+			args.ticker_symbol  = reinvestment_list
 			symbols_list        = reinvestment_list
 		if args.dividends is not None:
+			args.dividends      = reinvestment_list
 			dividend_list       = reinvestment_list
+
+
+	print("\nSettings as follows:")
+	print("-----------------------------------------------------------------------------------")
+	arguments = vars(args)
+	list1 = []
+	list2 = []
+
+	for arg in arguments:
+		value = getattr(args, arg)
+		if arg and type(value) != list:
+			list1.append([arg, value])
+		elif arg:
+			list2.append([arg, value])
+
+	for arg in list1 :
+		print(f"{arg[0]}\t{arg[1]}")
+
+	for arg in list2:
+		print(f"{arg[0]}\t{arg[1]}")
+
+	#----------------------------------------------------------------
 
 	if symbols_list:
 		print(f"\n[Stock Price Now]\t\t{datetime.now().strftime('%d-%b-%Y')}",)
@@ -240,7 +258,9 @@ def main():
 		start_date_str = int(start_date.timestamp())
 		end_date_str = int(end_date.timestamp())
 
-		print(f"\n[Drip Amount From Dividends]\t{start_date.date().strftime('%d-%b-%Y')} over the next {args.period_years} year(s) or {end_date.date().strftime('%d-%b-%Y')}:")
+		dividend_cache.clear()
+
+		print(f"\n[Drip Amount From Dividends]\t{start_date.date().strftime('%d-%b-%Y')} over the next 1 year(s) or {end_date.date().strftime('%d-%b-%Y')}:")
 		print("-----------------------------------------------------------------------------------")
 
 		for ticker_symbol in reinvestment_list:

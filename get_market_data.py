@@ -97,7 +97,7 @@ def main():
 		start_date_token = yf.get_time(start_date)
 		end_date_token   = yf.get_time(end_date)
 
-		dividend_cache.clear_except_dates(start_date, end_date)
+		dividend_cache.clear_except_dates(start_date_token, end_date_token)
 
 		print(f"\n[Drip Amount From Dividends]\t{start_date.date().strftime('%d-%b-%Y')} over the next 1 year(s) or {end_date.date().strftime('%d-%b-%Y')}:")
 		print("-----------------------------------------------------------------------------------")

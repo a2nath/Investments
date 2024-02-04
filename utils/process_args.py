@@ -15,7 +15,7 @@ class Process_Args:
 		return names, len(names)
 
 	def __init__(self, args, filename):
-		
+
 		self.symbols_list      = []
 		self.dividend_list     = []
 		self.reinvestment_list = []
@@ -35,20 +35,20 @@ class Process_Args:
 
 		# get names from the default file if no parameters passed
 		if not self.symbols_list and not self.dividend_list and not self.reinvestment_list:
-			
+
 			args.ticker_symbol      = []
 			args.dividends          = []
 			args.drip_amount        = []
-			
+
 			# defined and has symbols
-			if args.show_all is not None and args.show_all: 
+			if args.show_all is not None and args.show_all:
 				symbols = args.show_all
 
 			# defined but has no symbols
 			elif args.show_all is not None:
 				symbols, count = self.get_names(filename)
 				print("Found ", count, f" names from {filename}")
-			else: 
+			else:
 				symbols = []
 
 			if args.ticker_symbol is not None:
@@ -62,7 +62,7 @@ class Process_Args:
 
 		# only ticker is defined
 		elif self.symbols_list and not self.dividend_list and not self.reinvestment_list:
-			
+
 			if args.dividends is not None:
 				args.dividends          = self.symbols_list
 				self.dividend_list      = self.symbols_list

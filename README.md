@@ -20,20 +20,23 @@ In most cases one has to run the numbers when they notice that they are no longe
 ### Setup
 
 * sign up for yahoo API called api-dojo and get the private key, https://rapidapi.com/manwilbahaa/api/yahoo-finance127/
-* make a new file called `private_keys.py` and use the private key above to set the header content
-* optional: create a new file called `dividends_list.csv` and put all the ticker symbols there to query the price for
+* make a new file `utils/private.py` and use the private key above to set the header content
+* optional: create a new file `data/dividends_list.csv` and put all the ticker symbols to query their price
+
+
+
+If you're using the default Yahoo Finance API, then you need a private key to invoke `requests` for the market data. Create a new file, `utils/private.py` and add this code. Replace the `xx` with your key:
+```python
+private_key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+```
+
+If you're trying to change the API, then uncomment/comment out the lines in the `get_market_data.py` file in here
+```python
+from utils.yahoo_finance import Api_Dojo as yf # yahoo finance api
+#from utils.yahoo_finance import Yfinance as yf # yahoo finance api
+```
 
 ### Usage
-
-To setup the header content in the file and save it in the same directory as the script:
-```python
-headers = {
-	'x-rapidapi-key': "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-	'x-rapidapi-host': "apidojo-yahoo-finance-v1.p.rapidapi.com"
-}
-```
-<br />
-
 To get the price of a ticker symbol use the -t switch
 
 ```python
@@ -139,6 +142,7 @@ Settings as follows:
 -----------------------------------------------------------------------------------
 last_n_years     1
 period_years     1
+show_all         True
 ticker_symbol    ['TD.TO','XEI.TO']
 dividends        ['TD.TO','XEI.TO']
 drip_amount      ['TD.TO','XEI.TO']
@@ -263,8 +267,6 @@ Settings as follows:
 -----------------------------------------------------------------------------------
 last_n_years    1
 period_years    1
-show_all        False
-breakdown       False
 ticker_symbol   ['TD.TO']
 dividends       ['XEI.TO']
 drip_amount     []

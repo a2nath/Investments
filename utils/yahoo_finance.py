@@ -15,10 +15,17 @@ class Api_Dojo:
 	def get_dividend_data(self, ticker_symbol, start_date, end_date):
 
 		# Yahoo Finance API endpoint for dividends
-		url = f"https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v2/get-historical-data?frequency=1d&filter=dividends&period1={start_date}&period2={end_date}&symbol={ticker_symbol}"
+		url = f"https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v2/get-historical-data"#?frequency=1d&filter=dividends&period1={start_date}&period2={end_date}&symbol={ticker_symbol}"
 
+		params = {
+				"frequency":"1d",
+				"filter":"dividends",
+				"period1": start_date,
+				"period2": end_date,
+				"symbol": ticker_symbol
+			}
 		# Make the request
-		response = requests.get(url, headers=self.headers)
+		response = requests.get(url, headers=self.headers, params=params)
 
 		# Check if the request was successful
 		if response.status_code == 200:

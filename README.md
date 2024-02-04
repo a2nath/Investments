@@ -256,6 +256,32 @@ TD.TO   drip amount:7694.1,buy shares:90,per payout:0.96,cost per share:85.49
 ```
 <br />
 
+### Breakdown
+
+Enter the total of cash available and a list of ticker symbols to buy. The algorithm will try to maximize the dividends while also trying to keep a balance of the number of shares in order to not overly-invest in some stocks. This is using the -b switch. Work in progress. Output as follows
+```python
+python get_market_data.py -b 10000 VTI SCHD GOOG SPY VOO
+```
+```bash
+Settings as follows:
+-----------------------------------------------------------------------------------
+last_n_years    1
+period_years    1
+breakdown       ['10000', 'VTI', 'SCHD', 'GOOG', 'SPY', 'VOO']
+amount  10000.0
+tickerlist      ['VTI', 'SCHD', 'GOOG', 'SPY', 'VOO']
+costs   [245.18, 77.0, 143.54, 494.35, 454.28]
+divs    [0.85325, 0.6647500000000001, 0, 1.65825, 1.58925]
+optimal weights: [0.2 0.2 0.2 0.2 0.2]
+calculate_number_of_shares
+VTI     8
+SCHD    26
+GOOG    14
+SPY     4
+VOO     4
+```
+<br />
+
 ### Expected Behaviour for Invalid Command
 
 As said before, you can't use separate lists for cost and dividend and expect an empty -r list to be populated as well. Only one of {-t, -d, -r} should have a non empty list of ticker symbols, and then the other two will be the same as that one. Invalid command:

@@ -8,6 +8,7 @@ from utils.yahoo_finance import Api_Dojo as yf # yahoo finance api
 #from utils.yahoo_finance import Yfinance as yf # yahoo finance api
 from utils.process_args import Process_Args
 from utils.caches import *
+from data.breakdown import GenerateBreakdown as gb
 
 default_file = "data/dividends_list.csv"
 dividend_timespan = 365 # days
@@ -17,34 +18,47 @@ yf = yf()
 ticker_cache = Ticker_Cache(yf)
 dividend_cache = Dividend_Cache(yf)
 
-def print_dividend_data(ticker_symbol, start_date, end_date):
-	size, mean_dividend = dividend_cache.div(ticker_symbol, start_date, end_date)
-	payout_amount = mean_dividend * size
+def print_dividend_data(ticker_symbols, start_date, end_date):
 
-	print(f"{ticker_symbol}\tper payout:{round(mean_dividend,2)},total payout:{round(payout_amount,2)}")
+	results = [dividend_cache.div(symbol, start_date, end_date) for symbol in ticker_symbols]
 
-
-def print_reinvestment_data(ticker_symbol, start_date, end_date):
 	# success: 0+ or failed: -1
-	size, mean_dividend = dividend_cache.div(ticker_symbol, start_date, end_date)
+	for symbol, (size, mean_dividend) in zip(ticker_symbols, results):
+		payout_amount = mean_dividend * size
+		print(f"{symbol}\tper payout:{round(mean_dividend,2)},total payout:{round(payout_amount,2)}")
 
-	if size > 0:
-		if mean_dividend > 0:
-			current_price = ticker_cache.price(ticker_symbol)
-			share_count = current_price / mean_dividend
-			drip_amount = ceil(share_count) * current_price
 
-			print(f"{ticker_symbol}\tdrip amount:{round(drip_amount,2)},buy shares:{ceil(share_count)},per payout:{round(mean_dividend, 2)},cost per share:{round(current_price, 2)} ")
+def print_reinvestment_data(ticker_symbols, start_date, end_date):
+
+	results = [dividend_cache.div(symbol, start_date, end_date) for symbol in ticker_symbols]
+
+	# success: 0+ or failed: -1
+	for symbol, (size, mean_dividend) in zip(ticker_symbols, results):
+		if size > 0:
+			if mean_dividend > 0:
+				current_price = ticker_cache.price(symbol, date=None)
+				share_count = current_price / mean_dividend
+				drip_amount = ceil(share_count) * current_price
+
+				print(f"{symbol}\tdrip amount:{round(drip_amount,2)},buy shares:{ceil(share_count)},per payout:{round(mean_dividend, 2)},cost per share:{round(current_price, 2)} ")
+			else:
+				print(f"{symbol}\tno dividends")
 		else:
-			print(f"{ticker_symbol}\tno dividends")
-	else:
-		print(f"{ticker_symbol}\tno dividend data")
+			print(f"{symbol}\tno dividend data")
 
+# multiple ticker symbol query
+def print_current_prices(ticker_symbols, query_date=None):
 
-def print_current_price(ticker_symbol, query_date=datetime.now()):
-	price = ticker_cache.price(ticker_symbol)
-	print(f"{ticker_symbol}\t{round(price,2)}")
+	prices_data = ticker_cache.prices(ticker_symbols, query_date)
+	for symbol, value in prices_data.items():
+		print(f"{symbol}\t{round(value,2)}")
 
+# single ticker symbol query
+def print_current_price(ticker_symbols, query_date=None):
+
+	for symbol in ticker_symbols:
+		price = ticker_cache.price(symbol, query_date)
+		print(f"{symbol}\t{round(price,2)}")
 
 def main():
 
@@ -55,10 +69,14 @@ def main():
 	parser.add_argument("-i", "--period_years", help="interval period to query. if interval is bigger than years, then it will query period length, default [1] = 365 days to average over since last_n_years", type=int, default=-1)
 	parser.add_argument("-r", "--drip_amount", help="amount needed to reinvest the dividend to buy more share(s)", nargs='*', type=str)
 	parser.add_argument("-a", "--show_all", help="get all the values supported in the script for a list of ticker symbols or from a file", nargs='*', type=str)
-	parser.add_argument("-b", "--breakdown", help="show itemized list of tickers from available cash to maximize growth or dividends", type=int, default=False)
+	parser.add_argument("-b", "--breakdown", help="show itemized list of tickers from available cash to maximize growth or dividends", nargs='+')
 
 	args = parser.parse_args()
 	p_args = Process_Args(args, default_file)
+
+	if args.breakdown is not None and len(args.breakdown) > 1:
+		bd = gb(yf, args.breakdown[0], args.breakdown[1:], ticker_cache, dividend_cache)
+		bd.print()
 
 	# get lists of data
 	price_symbol_list, dividend_list, reinvestment_list = p_args.get_lists()
@@ -66,10 +84,8 @@ def main():
 	if price_symbol_list:
 		print(f"\n[Stock Price Now]\t\t{datetime.now().strftime('%d-%b-%Y')}",)
 		print("-----------------------------------------------------------------------------------")
-
-		# simple cost of the security now
-		for ticker_symbol in price_symbol_list:
-			print_current_price(ticker_symbol)
+		#print_current_price(price_symbol_list, None)
+		print_current_prices(price_symbol_list)
 
 	# dividend information
 	if dividend_list:
@@ -83,9 +99,7 @@ def main():
 
 		print(f"\n[Mean Dividend]\t\t\t{start_date.date().strftime('%d-%b-%Y')} over the next {args.period_years} year(s) or {end_date.date().strftime('%d-%b-%Y')}:")
 		print("-----------------------------------------------------------------------------------")
-
-		for ticker_symbol in dividend_list:
-			print_dividend_data(ticker_symbol, start_date_token, end_date_token)
+		print_dividend_data(dividend_list, start_date_token, end_date_token)
 
 	# how much capital to get drip going
 	if reinvestment_list:
@@ -101,11 +115,7 @@ def main():
 
 		print(f"\n[Drip Amount From Dividends]\t{start_date.date().strftime('%d-%b-%Y')} over the next 1 year(s) or {end_date.date().strftime('%d-%b-%Y')}:")
 		print("-----------------------------------------------------------------------------------")
-
-		for ticker_symbol in reinvestment_list:
-			print_reinvestment_data(ticker_symbol, start_date_token, end_date_token)
-
-
+		print_reinvestment_data(reinvestment_list, start_date_token, end_date_token)
 
 if __name__ == "__main__":
 	main()

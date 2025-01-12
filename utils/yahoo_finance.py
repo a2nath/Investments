@@ -233,7 +233,7 @@ class yFinance:
             for symbol in ticker_symbols:
                 # Fetch current price
                 stock = yf.Ticker(symbol)
-                price = stock.info.get('currentPrice', None)
+                price = stock.info.get('currentPrice') or stock.info.get('regularMarketPreviousClose');
 
                 if price is not None:
                     price_data[symbol] = price

@@ -40,7 +40,7 @@ def print_reinvestment_data(ticker_symbols, start_date, end_date):
 				share_count = current_price / mean_dividend
 				drip_amount = ceil(share_count) * current_price
 
-				print(f"{symbol}\tdrip amount:{round(drip_amount,2)},buy shares:{ceil(share_count)},per payout:{mean_dividend},cost per share:{round(current_price, 2)} ")
+				print(f"{symbol}\tdrip amount:{round(drip_amount,2)},buy shares:{ceil(share_count)},per payout:{round(mean_dividend,4)},cost per share:{round(current_price, 2)} ")
 			else:
 				print(f"{symbol}\tno dividends")
 		else:

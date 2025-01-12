@@ -4,8 +4,8 @@ import pdb
 import argparse
 from datetime import datetime, timedelta
 from math import ceil
-from utils.yahoo_finance import Api_Dojo as yf # yahoo finance api
-#from utils.yahoo_finance import Yfinance as yf # yahoo finance api
+#from utils.yahoo_finance import Api_Dojo as yf # yahoo finance api
+from utils.yahoo_finance import yFinance as yf # yahoo finance api
 from utils.process_args import Process_Args
 from utils.caches import *
 from data.breakdown import GenerateBreakdown as gb

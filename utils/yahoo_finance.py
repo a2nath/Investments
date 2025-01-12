@@ -1,5 +1,6 @@
 import requests
 from utils.private import private_key
+import yfinance as yf
 from datetime import datetime, timedelta
 
 class Api_Dojo:
@@ -175,61 +176,83 @@ class Api_Dojo:
 			'x-rapidapi-host': "apidojo-yahoo-finance-v1.p.rapidapi.com"
 		}
 
-class Yfinance:
+class yFinance:
 
-	def last_year(self):
-		start_date = self.get_time(datetime.now() - timedelta(days=self.timestep * 1))
-		end_date = self.get_time(datetime.now())
-		return start_date, end_date
+    def last_year(self):
+        start_date = self.get_time(datetime.now() - timedelta(days=365))
+        end_date = self.get_time(datetime.now())
+        return start_date, end_date
 
-	def get_time(self, time):
-		return time.strftime('%Y-%m-%d')
+    def get_time(self, time):
+        return time.strftime('%Y-%m-%d')
 
-	def get_dividend_data(self, ticker_symbol, start_date, end_date):
+    def get_dividend_data(self, ticker_symbol, start_date, end_date):
+        #pdb.set_trace();
+        try:
+            # Fetch dividend data using yfinance
+            stock = yf.Ticker(ticker_symbol)
 
-		try:
-			# Fetch dividend data using yfinance
-			stock = yf.Ticker(ticker_symbol)
+            # Get dividend data for the specified period
+            dividend_data = stock.dividends[start_date:end_date]
 
-			# Get dividend data for the specified period
-			dividend_data = stock.dividends[start_date:end_date]
+            # Count the number of dividend payouts
+            num_payouts = len(dividend_data)
 
-			# Count the number of dividend payouts
-			num_payouts = len(dividend_data)
+            mean_dividend = 0
+            if num_payouts > 0:
+                mean_dividend = dividend_data.mean()
 
-			mean_dividend = 0
+            return num_payouts, mean_dividend
 
-			if dividend_data:
-				mean_dividend = sum(dividend_data) / num_payouts
+        except Exception as e:
+            print(f"Failed to fetch dividends data for {ticker_symbol}. Error: {e}")
+            return -1, -1
 
-			print(f"payouts: {num_payouts}, mean: {mean_dividend}")
-			return num_payouts, mean_dividend
+    def get_price_on(self, ticker_symbols, date):
+        try:
+            price_data = {}
+            for symbol in ticker_symbols:
+                # Fetch historical data for the given date
+                stock = yf.Ticker(symbol)
+                historical = stock.history(start=date, end=(datetime.strptime(date, '%Y-%m-%d') + timedelta(days=1)).strftime('%Y-%m-%d'))
 
-		except Exception as e:
-			print(f"Failed to fetch divdidends data for {ticker_symbol}. Error: {e}")
-			return -1, -1
+                if not historical.empty:
+                    price_data[symbol] = historical.iloc[0]['Close']
+                else:
+                    price_data[symbol] = None
 
-	def get_price(self, ticker_symbol):
+            return 200, price_data
 
-		try:
-			# Create a Ticker object for the specified stock symbol
-			stock = yf.Ticker(ticker_symbol)
+        except Exception as e:
+            print(f"Failed to fetch historical price data. Error: {e}")
+            return 500, {}
 
-			# Get the current stock price
-			current_price = stock.info['currentPrice']
+    def get_current_price_v2(self, ticker_symbols):
+        try:
+            price_data = {}
+            for symbol in ticker_symbols:
+                # Fetch current price
+                stock = yf.Ticker(symbol)
+                price = stock.info.get('currentPrice', None)
 
-			if current_price is not None and type(current_price) == float and current_price > 0:
-				return current_price
-			else:
-				print(f"Failed to fetch price data for {ticker_symbol}. current_price: {current_price}")
-				return -1
+                if price is not None:
+                    price_data[symbol] = price
+                else:
+                    price_data[symbol] = None
 
-		except Exception as e:
-			print(f"Failed to fetch price data for {ticker_symbol}. Error: {e}")
-			return -1
+            return 200, price_data
 
-	def __init__(self):
-		self.source = "https://rapidapi.com/manwilbahaa/api/yahoo-finance127"
-		self.host = "yahoo-finance127.p.rapidapi.com"
-		self.price = "price/"
-		self.dividend = "historic"
+        except Exception as e:
+            print(f"Failed to fetch current price data. Error: {e}")
+            return 500, {}
+
+    def get_price(self, ticker_symbol, date=None):
+        if date:
+            status_code, price_data = self.get_price_on([ticker_symbol], date)
+            return price_data.get(ticker_symbol, -1) if status_code == 200 else -1
+        else:
+            status_code, price_data = self.get_current_price_v2([ticker_symbol])
+            return price_data.get(ticker_symbol, -1) if status_code == 200 else -1
+
+    def __init__(self):
+        self.source = "https://finance.yahoo.com"

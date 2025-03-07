@@ -187,7 +187,6 @@ class yFinance:
 		return time.strftime('%Y-%m-%d')
 
 	def get_dividend_data(self, ticker_symbol, start_date, end_date):
-		#pdb.set_trace();
 		try:
 			# Fetch dividend data using yfinance
 			stock = yf.Ticker(ticker_symbol)
@@ -233,11 +232,23 @@ class yFinance:
 			for symbol in ticker_symbols:
 				# Fetch current price
 				stock = yf.Ticker(symbol)
-				price = stock.info.get('currentPrice') or stock.info.get('regularMarketPreviousClose');
+				price = stock.info.get('currentPrice')
+
+				# If currentPrice is not available, fallback to ask price or regularMarketPrice
+				if price is None:
+					price = stock.info.get('ask')  # Ask price can also provide current info
+				if price is None:
+					price = stock.info.get('regularMarketPrice')  # Fallback to market pric
+
+				# If no price is found, fallback to previous close price
+				if price is None:
+					print(f"Warning {ticker_symbol} symbol could return lowest price")
+					price = stock.info.get('regularMarketPreviousClose')
 
 				if price is not None:
 					price_data[symbol] = price
 				else:
+					print(f"Error {ticker_symbol} symbol did not return a price")
 					price_data[symbol] = None
 
 			return 200, price_data

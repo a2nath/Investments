@@ -178,81 +178,81 @@ class Api_Dojo:
 
 class yFinance:
 
-    def last_year(self):
-        start_date = self.get_time(datetime.now() - timedelta(days=365))
-        end_date = self.get_time(datetime.now())
-        return start_date, end_date
+	def last_year(self):
+		start_date = self.get_time(datetime.now() - timedelta(days=365))
+		end_date = self.get_time(datetime.now())
+		return start_date, end_date
 
-    def get_time(self, time):
-        return time.strftime('%Y-%m-%d')
+	def get_time(self, time):
+		return time.strftime('%Y-%m-%d')
 
-    def get_dividend_data(self, ticker_symbol, start_date, end_date):
-        #pdb.set_trace();
-        try:
-            # Fetch dividend data using yfinance
-            stock = yf.Ticker(ticker_symbol)
+	def get_dividend_data(self, ticker_symbol, start_date, end_date):
+		#pdb.set_trace();
+		try:
+			# Fetch dividend data using yfinance
+			stock = yf.Ticker(ticker_symbol)
 
-            # Get dividend data for the specified period
-            dividend_data = stock.dividends[start_date:end_date]
+			# Get dividend data for the specified period
+			dividend_data = stock.dividends[start_date:end_date]
 
-            # Count the number of dividend payouts
-            num_payouts = len(dividend_data)
+			# Count the number of dividend payouts
+			num_payouts = len(dividend_data)
 
-            mean_dividend = 0
-            if num_payouts > 0:
-                mean_dividend = dividend_data.mean()
+			mean_dividend = 0
+			if num_payouts > 0:
+				mean_dividend = dividend_data.mean()
 
-            return num_payouts, mean_dividend
+			return num_payouts, mean_dividend
 
-        except Exception as e:
-            print(f"Failed to fetch dividends data for {ticker_symbol}. Error: {e}")
-            return -1, -1
+		except Exception as e:
+			print(f"Failed to fetch dividends data for {ticker_symbol}. Error: {e}")
+			return -1, -1
 
-    def get_price_on(self, ticker_symbols, date):
-        try:
-            price_data = {}
-            for symbol in ticker_symbols:
-                # Fetch historical data for the given date
-                stock = yf.Ticker(symbol)
-                historical = stock.history(start=date, end=(datetime.strptime(date, '%Y-%m-%d') + timedelta(days=1)).strftime('%Y-%m-%d'))
+	def get_price_on(self, ticker_symbols, date):
+		try:
+			price_data = {}
+			for symbol in ticker_symbols:
+				# Fetch historical data for the given date
+				stock = yf.Ticker(symbol)
+				historical = stock.history(start=date, end=(datetime.strptime(date, '%Y-%m-%d') + timedelta(days=1)).strftime('%Y-%m-%d'))
 
-                if not historical.empty:
-                    price_data[symbol] = historical.iloc[0]['Close']
-                else:
-                    price_data[symbol] = None
+				if not historical.empty:
+					price_data[symbol] = historical.iloc[0]['Close']
+				else:
+					price_data[symbol] = None
 
-            return 200, price_data
+			return 200, price_data
 
-        except Exception as e:
-            print(f"Failed to fetch historical price data. Error: {e}")
-            return 500, {}
+		except Exception as e:
+			print(f"Failed to fetch historical price data. Error: {e}")
+			return 500, {}
 
-    def get_current_price_v2(self, ticker_symbols):
-        try:
-            price_data = {}
-            for symbol in ticker_symbols:
-                # Fetch current price
-                stock = yf.Ticker(symbol)
-                price = stock.info.get('currentPrice') or stock.info.get('regularMarketPreviousClose');
+	def get_current_price_v2(self, ticker_symbols):
+		try:
+			price_data = {}
+			for symbol in ticker_symbols:
+				# Fetch current price
+				stock = yf.Ticker(symbol)
+				price = stock.info.get('currentPrice') or stock.info.get('regularMarketPreviousClose');
 
-                if price is not None:
-                    price_data[symbol] = price
-                else:
-                    price_data[symbol] = None
+				if price is not None:
+					price_data[symbol] = price
+				else:
+					price_data[symbol] = None
 
-            return 200, price_data
+			return 200, price_data
 
-        except Exception as e:
-            print(f"Failed to fetch current price data. Error: {e}")
-            return 500, {}
+		except Exception as e:
+			print(f"Failed to fetch current price data. Error: {e}")
+			return 500, {}
 
-    def get_price(self, ticker_symbol, date=None):
-        if date:
-            status_code, price_data = self.get_price_on([ticker_symbol], date)
-            return price_data.get(ticker_symbol, -1) if status_code == 200 else -1
-        else:
-            status_code, price_data = self.get_current_price_v2([ticker_symbol])
-            return price_data.get(ticker_symbol, -1) if status_code == 200 else -1
+	def get_price(self, ticker_symbol, date=None):
+		if date:
+			status_code, price_data = self.get_price_on([ticker_symbol], date)
+			return price_data.get(ticker_symbol, -1) if status_code == 200 else -1
+		else:
+			status_code, price_data = self.get_current_price_v2([ticker_symbol])
+			return price_data.get(ticker_symbol, -1) if status_code == 200 else -1
 
-    def __init__(self):
-        self.source = "https://finance.yahoo.com"
+	def __init__(self):
+		self.source = "https://finance.yahoo.com"
